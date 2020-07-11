@@ -28,7 +28,8 @@
     "react-native-web": "~0.11.7",
     "stream": "0.0.2",
     "string.prototype.matchall": "^4.0.2",
-    "url": "^0.11.0"
+    "url": "^0.11.0",
+    "expo-av": "~8.2.1"
   },
   "devDependencies": {
     "@babel/core": "^7.8.6",
