@@ -9,7 +9,7 @@ export default async function getLeagues(date: Date) {
 
   const year: string = date.getFullYear().toString();
   const month: string = (date.getMonth() + 1).toString().padStart(2, "0");
-  const day: string = date.getDate().toString().padStart(2, "0");
+  const day: string = (date.getDate() - 1).toString().padStart(2, "0");
 
   return await getJsonFromUrl(
     `https://darsh.sportsvideo.net/new-api/matches?timeZone=${timezoneOffset}&date=${

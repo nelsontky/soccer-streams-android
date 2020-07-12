@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Text, View, ActivityIndicator } from "react-native";
+import { StackNavigationProp } from "@react-navigation/stack";
 import { RouteProp } from "@react-navigation/native";
 
 import url from "url";
@@ -13,7 +14,7 @@ import { styles } from "../components/EventButton";
 // Extractor Utils
 import getWebsiteLinks, {
   WebsiteLinkInformation,
-} from "../extractors/utils/getWebsiteLinksStub";
+} from "../extractors/utils/getWebsiteLinks";
 import { FlatList, TouchableOpacity } from "react-native-gesture-handler";
 
 // Extractors
@@ -21,17 +22,24 @@ import daddylive from "../extractors/daddylive";
 import simpleFind from "../extractors/common-extractors/simpleFind";
 import streamCr7 from "../extractors/stream-cr7";
 
+// Stubs
+// import getWebsiteLinks, {
+//   WebsiteLinkInformation,
+// } from "../extractors/utils/getWebsiteLinksStub";
+
 type EventScreenRouteProp = RouteProp<StackParamList, "Event">;
+type EventScreenNavigationProp = StackNavigationProp<StackParamList, "Event">;
 
 // Interfaces
 interface EventProps {
   route: EventScreenRouteProp;
+  navigation: EventScreenNavigationProp;
 }
 
 const MISSING_MSG: string =
   "No streams available yet, streams will appear around 30 mins prior to kick-off. If the game is already on going, there is a high chance that there are no links for this game. Game may be over too.";
 
-export default function Event({ route }: EventProps) {
+export default function Event({ route, navigation }: EventProps) {
   const [websiteLinkInformations, setWebsiteLinkInformations] = useState<
     WebsiteLinkInformation[] | undefined
   >(undefined);
@@ -63,7 +71,7 @@ export default function Event({ route }: EventProps) {
           renderItem={({ item }: { item: WebsiteLinkInformation }) => (
             <TouchableOpacity
               style={styles.button}
-              onPress={genOnPress(item.websiteLink)}
+              onPress={genOnPress(item.websiteLink, navigation)}
             >
               <Text style={styles.buttonItemText}>
                 {item.channelName + " " + item.quality}
@@ -76,7 +84,10 @@ export default function Event({ route }: EventProps) {
   }
 }
 
-function genOnPress(websiteLink: string): () => void {
+function genOnPress(
+  websiteLink: string,
+  navigation: EventScreenNavigationProp
+): () => void {
   return async () => {
     const websiteDomain: string | null = url.parse(websiteLink).hostname;
 
@@ -87,16 +98,19 @@ function genOnPress(websiteLink: string): () => void {
     let m3u8Link: string;
 
     switch (websiteDomain) {
-      case "stream-cr7.net":
-        m3u8Link = await streamCr7(websiteLink);
-        break;
       case "daddylive.live":
         m3u8Link = await daddylive(websiteLink);
         break;
+      case "myoplay.club":
+        m3u8Link = await simpleFind(websiteLink);
       default:
         m3u8Link = await simpleFind(websiteLink);
     }
 
-    console.log(m3u8Link);
+    // Add url check here
+
+    navigation.navigate("Stream", {
+      url: m3u8Link,
+    });
   };
 }

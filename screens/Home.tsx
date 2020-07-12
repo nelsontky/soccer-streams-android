@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-  ActivityIndicator,
-  SectionList,
-} from "react-native";
+import { StyleSheet, Text, ActivityIndicator, SectionList } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 
 // Components
@@ -21,7 +15,7 @@ import getLeagues from "../extractors/utils/getLeagues";
 import { StackParamList } from "../App";
 
 // Filters
-import {validStatuses} from "../filters"
+import { validStatuses } from "../filters";
 
 type HomeScreenNavigationProp = StackNavigationProp<StackParamList, "Home">;
 
