@@ -15,9 +15,9 @@ import { StackParamList } from "../App";
 import { styles } from "../components/EventButton";
 
 // Extractor Utils
-// import getWebsiteLinks, {
-//   WebsiteLinkInformation,
-// } from "../extractors/utils/getWebsiteLinks";
+import getWebsiteLinks, {
+  WebsiteLinkInformation,
+} from "../extractors/utils/getWebsiteLinks";
 import { FlatList, TouchableOpacity } from "react-native-gesture-handler";
 
 // Extractors
@@ -25,9 +25,9 @@ import daddylive from "../extractors/daddylive";
 import simpleFind from "../extractors/common-extractors/simpleFind";
 
 // Stubs
-import getWebsiteLinks, {
-  WebsiteLinkInformation,
-} from "../extractors/utils/getWebsiteLinksStub";
+// import getWebsiteLinks, {
+//   WebsiteLinkInformation,
+// } from "../extractors/utils/getWebsiteLinksStub";
 
 type EventScreenRouteProp = RouteProp<StackParamList, "Event">;
 type EventScreenNavigationProp = StackNavigationProp<StackParamList, "Event">;
