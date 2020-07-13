@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Text, View, ActivityIndicator } from "react-native";
+import { Text, View, ToastAndroid } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RouteProp } from "@react-navigation/native";
 import * as IntentLauncher from "expo-intent-launcher";
+
+import Loading from "../components/Loading";
 
 import url from "url";
 
@@ -21,7 +23,6 @@ import { FlatList, TouchableOpacity } from "react-native-gesture-handler";
 // Extractors
 import daddylive from "../extractors/daddylive";
 import simpleFind from "../extractors/common-extractors/simpleFind";
-import streamCr7 from "../extractors/stream-cr7";
 
 // Stubs
 import getWebsiteLinks, {
@@ -45,6 +46,8 @@ export default function Event({ route, navigation }: EventProps) {
     WebsiteLinkInformation[] | undefined
   >(undefined);
 
+  const [isLoadingStream, setIsLoadingStream] = useState<boolean>(false);
+
   useEffect(() => {
     getWebsiteLinks(
       route.params.redditEventLink
@@ -53,8 +56,8 @@ export default function Event({ route, navigation }: EventProps) {
     );
   }, []);
 
-  if (websiteLinkInformations == undefined) {
-    return <ActivityIndicator />;
+  if (websiteLinkInformations === undefined || isLoadingStream) {
+    return <Loading />;
   } else if (websiteLinkInformations.length === 0) {
     return (
       <View>
@@ -72,10 +75,19 @@ export default function Event({ route, navigation }: EventProps) {
           renderItem={({ item }: { item: WebsiteLinkInformation }) => (
             <TouchableOpacity
               style={styles.button}
-              onPress={genOnPress(item.websiteLink, navigation)}
+              onPress={async () => {
+                setIsLoadingStream(true);
+                try {
+                  await scrapeAndOpenStream(item.websiteLink, () =>
+                    setIsLoadingStream(false)
+                  );
+                } catch (e) {
+                  ToastAndroid.show(e.message, ToastAndroid.LONG);
+                }
+              }}
             >
               <Text style={styles.buttonItemText}>
-                {item.channelName + " " + item.quality}
+                {item.channelName + " " + item.quality + " " + item.language}
               </Text>
             </TouchableOpacity>
           )}
@@ -85,51 +97,46 @@ export default function Event({ route, navigation }: EventProps) {
   }
 }
 
-function genOnPress(
+async function scrapeAndOpenStream(
   websiteLink: string,
-  navigation: EventScreenNavigationProp
-): () => void {
-  return async () => {
-    const websiteDomain: string | null = url.parse(websiteLink).hostname;
+  setLoadCompleted: () => void
+): Promise<void> {
+  const websiteDomain: string | null = url.parse(websiteLink).hostname;
 
-    if (websiteDomain === null) {
-      throw new Error(`${websiteLink} parse error`);
+  if (websiteDomain === null) {
+    throw new Error(`${websiteLink} parse error`);
+  }
+
+  let m3u8Link: string | undefined = undefined;
+
+  try {
+    switch (websiteDomain) {
+      case "daddylive.live":
+        m3u8Link = await daddylive(websiteLink);
+        break;
+      default:
+        m3u8Link = await simpleFind(websiteLink);
     }
+  } catch (e) {
+    // Any parsing errors, throw error
+    throw new Error("Stream is not available, try another stream!");
+  } finally {
+    setLoadCompleted();
+  }
 
-    let m3u8Link: string | undefined = undefined;
+  // Add url check here
 
-    try {
-      switch (websiteDomain) {
-        case "daddylive.live":
-          m3u8Link = await daddylive(websiteLink);
-          break;
-        default:
-          m3u8Link = await simpleFind(websiteLink);
-      }
-    } catch (e) {
-      // Any parsing errors, just ignore the url
-      console.log(e.message);
+  const result: IntentLauncher.IntentLauncherResult = await IntentLauncher.startActivityAsync(
+    "android.intent.action.VIEW",
+    {
+      packageName: "com.mxtech.videoplayer.ad",
+      data: m3u8Link,
     }
+  );
 
-    if (m3u8Link !== undefined) {
-      // Add url check here
-
-      const result: IntentLauncher.IntentLauncherResult = await IntentLauncher.startActivityAsync(
-        "android.intent.action.VIEW",
-        {
-          packageName: "org.videolan.vlc",
-          data: m3u8Link,
-          type: "video/*",
-        }
-      );
-
-      if (result.resultCode === IntentLauncher.ResultCode.Canceled) {
-        throw new Error(
-          "Install VLC from Google Play Store, before trying again and opening stream with VLC"
-        );
-      }
-    } else {
-      throw new Error("Stream is not available, try another stream!");
-    }
-  };
+  if (result.resultCode === IntentLauncher.ResultCode.Canceled) {
+    throw new Error(
+      "Install MX Player from Google Play Store, before trying again and opening stream with MX Player"
+    );
+  }
 }

@@ -1,6 +1,7 @@
 import $ from "cheerio";
 import url from "url";
 
+import delay from "./delay";
 import supportedSites from "./supportedSites";
 import { getHtmlFromUrl } from "./get";
 
@@ -8,6 +9,7 @@ export interface WebsiteLinkInformation {
   channelName: string;
   quality: string;
   websiteLink: string;
+  language: string;
 }
 
 /**
@@ -40,9 +42,13 @@ export default async function getWebsiteLinks(
     .first()
     .find("div.stream-item");
 
-  let index = 1;
+  titleElements.each((_, element: CheerioElement) => {
+    const channelName: string = $(element)
+      .find("span.label-channel-name")
+      .first()
+      .text()
+      .trim();
 
-  titleElements.each(function (_, element: CheerioElement) {
     const quality: string = $(element)
       .find("span.label-danger")
       .first()
@@ -54,6 +60,12 @@ export default async function getWebsiteLinks(
       .first()
       .attr("href");
 
+    const language: string | undefined = $(element)
+      .find("span.language")
+      .first()
+      .text()
+      .trim();
+
     if (websiteLink !== undefined) {
       const websiteDomain: string | null = url.parse(websiteLink).hostname;
 
@@ -63,12 +75,11 @@ export default async function getWebsiteLinks(
 
       if (supportedSites[websiteDomain]) {
         websiteLinkInformations.push({
-          channelName: `Link ${index}: ${websiteDomain}`,
+          channelName,
           quality,
           websiteLink,
+          language,
         });
-
-        index++;
       }
     }
   });

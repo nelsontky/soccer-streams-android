@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, Text, ActivityIndicator, SectionList } from "react-native";
+import { StyleSheet, Text, SectionList } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { NavigationContainer } from "@react-navigation/native";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 
 // Components
 import EventButton from "../components/EventButton";
+import Loading from "../components/Loading";
 
 // Extractor utils
 import getLeagues from "../extractors/utils/getLeagues";
@@ -55,12 +55,12 @@ export interface League {
 }
 
 type TabParamList = {
-  Today: { date: Date; navigation: HomeScreenNavigationProp };
-  Yesterday: { date: Date; navigation: HomeScreenNavigationProp };
-  Tomorrow: { date: Date; navigation: HomeScreenNavigationProp };
+  Today: undefined;
+  Yesterday: undefined;
+  Tomorrow: undefined;
 };
 
-const Tab = createMaterialTopTabNavigator();
+const Tab = createMaterialTopTabNavigator<TabParamList>();
 
 export default function Home({
   navigation,
@@ -104,7 +104,7 @@ function Matches({ date, navigation }: MatchesProps) {
   }, []);
 
   if (leagues === undefined) {
-    return <ActivityIndicator />;
+    return <Loading />;
   } else {
     return (
       <SectionList

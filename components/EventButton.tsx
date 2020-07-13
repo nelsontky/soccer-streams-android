@@ -18,7 +18,7 @@ export const styles = StyleSheet.create({
   buttonItemLarge: {
     width: "40%",
     display: "flex",
-    flexDirection: "row",
+    flexDirection: "column",
     justifyContent: "center",
   },
   buttonItemMiddle: {
