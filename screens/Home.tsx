@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { StyleSheet, Text, ActivityIndicator, SectionList } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
+import { NavigationContainer } from "@react-navigation/native";
+import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 
 // Components
 import EventButton from "../components/EventButton";
@@ -52,15 +54,53 @@ export interface League {
   events: Event[];
 }
 
+type TabParamList = {
+  Today: { date: Date; navigation: HomeScreenNavigationProp };
+  Yesterday: { date: Date; navigation: HomeScreenNavigationProp };
+  Tomorrow: { date: Date; navigation: HomeScreenNavigationProp };
+};
+
+const Tab = createMaterialTopTabNavigator();
+
 export default function Home({
   navigation,
 }: {
   navigation: HomeScreenNavigationProp;
 }) {
+  return (
+    <Tab.Navigator initialRouteName="Today">
+      <Tab.Screen name="Yesterday">
+        {() => (
+          <Matches
+            date={new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * 1)}
+            navigation={navigation}
+          />
+        )}
+      </Tab.Screen>
+      <Tab.Screen name="Today">
+        {() => <Matches date={new Date()} navigation={navigation} />}
+      </Tab.Screen>
+      <Tab.Screen name="Tomorrow">
+        {() => (
+          <Matches
+            date={new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 1)}
+            navigation={navigation}
+          />
+        )}
+      </Tab.Screen>
+    </Tab.Navigator>
+  );
+}
+
+interface MatchesProps {
+  date: Date;
+  navigation: HomeScreenNavigationProp;
+}
+function Matches({ date, navigation }: MatchesProps) {
   const [leagues, setLeagues] = useState<League[] | undefined>(undefined);
 
   useEffect(() => {
-    getLeagues(new Date()).then((leagues) => setLeagues(leagues));
+    getLeagues(date).then((leagues) => setLeagues(leagues));
   }, []);
 
   if (leagues === undefined) {

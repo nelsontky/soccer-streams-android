@@ -125,11 +125,11 @@ function genOnPress(
 
       if (result.resultCode === IntentLauncher.ResultCode.Canceled) {
         throw new Error(
-          "Install VLC from Google Play Store, before trying again and opening link with VLC"
+          "Install VLC from Google Play Store, before trying again and opening stream with VLC"
         );
       }
     } else {
-      throw new Error("Link is not available, try another link!");
+      throw new Error("Stream is not available, try another stream!");
     }
   };
 }
