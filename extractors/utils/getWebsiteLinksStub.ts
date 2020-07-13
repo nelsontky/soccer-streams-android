@@ -3102,7 +3102,7 @@ export default async function getWebsiteLinks(
 
   let websiteLinkInformations: WebsiteLinkInformation[] = [];
 
-  const titleElements: Cheerio = $(html)
+  const titleElements: Cheerio = $(SAMPLE_HTML)
     .find("div.col-lg")
     .first()
     .find("div.stream-item");

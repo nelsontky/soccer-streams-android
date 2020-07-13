@@ -6,7 +6,6 @@ import { createStackNavigator } from "@react-navigation/stack";
 // Screens
 import Home from "./screens/Home";
 import Event from "./screens/Event";
-import VideoScreen from "./screens/VideoScreen";
 
 // Types
 export type StackParamList = {
@@ -23,7 +22,6 @@ export default function App() {
       <Stack.Navigator>
         <Stack.Screen name="Home" component={Home} />
         <Stack.Screen name="Event" component={Event} />
-        <Stack.Screen name="Stream" component={VideoScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

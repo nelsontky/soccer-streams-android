@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Text, View, ActivityIndicator } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RouteProp } from "@react-navigation/native";
+import * as IntentLauncher from "expo-intent-launcher";
 
 import url from "url";
 
@@ -12,9 +13,9 @@ import { StackParamList } from "../App";
 import { styles } from "../components/EventButton";
 
 // Extractor Utils
-import getWebsiteLinks, {
-  WebsiteLinkInformation,
-} from "../extractors/utils/getWebsiteLinks";
+// import getWebsiteLinks, {
+//   WebsiteLinkInformation,
+// } from "../extractors/utils/getWebsiteLinks";
 import { FlatList, TouchableOpacity } from "react-native-gesture-handler";
 
 // Extractors
@@ -23,9 +24,9 @@ import simpleFind from "../extractors/common-extractors/simpleFind";
 import streamCr7 from "../extractors/stream-cr7";
 
 // Stubs
-// import getWebsiteLinks, {
-//   WebsiteLinkInformation,
-// } from "../extractors/utils/getWebsiteLinksStub";
+import getWebsiteLinks, {
+  WebsiteLinkInformation,
+} from "../extractors/utils/getWebsiteLinksStub";
 
 type EventScreenRouteProp = RouteProp<StackParamList, "Event">;
 type EventScreenNavigationProp = StackNavigationProp<StackParamList, "Event">;
@@ -95,22 +96,40 @@ function genOnPress(
       throw new Error(`${websiteLink} parse error`);
     }
 
-    let m3u8Link: string;
+    let m3u8Link: string | undefined = undefined;
 
-    switch (websiteDomain) {
-      case "daddylive.live":
-        m3u8Link = await daddylive(websiteLink);
-        break;
-      case "myoplay.club":
-        m3u8Link = await simpleFind(websiteLink);
-      default:
-        m3u8Link = await simpleFind(websiteLink);
+    try {
+      switch (websiteDomain) {
+        case "daddylive.live":
+          m3u8Link = await daddylive(websiteLink);
+          break;
+        default:
+          m3u8Link = await simpleFind(websiteLink);
+      }
+    } catch (e) {
+      // Any parsing errors, just ignore the url
+      console.log(e.message);
     }
 
-    // Add url check here
+    if (m3u8Link !== undefined) {
+      // Add url check here
 
-    navigation.navigate("Stream", {
-      url: m3u8Link,
-    });
+      const result: IntentLauncher.IntentLauncherResult = await IntentLauncher.startActivityAsync(
+        "android.intent.action.VIEW",
+        {
+          packageName: "org.videolan.vlc",
+          data: m3u8Link,
+          type: "video/*",
+        }
+      );
+
+      if (result.resultCode === IntentLauncher.ResultCode.Canceled) {
+        throw new Error(
+          "Install VLC from Google Play Store, before trying again and opening link with VLC"
+        );
+      }
+    } else {
+      throw new Error("Link is not available, try another link!");
+    }
   };
 }
