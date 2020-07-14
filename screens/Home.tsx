@@ -68,7 +68,12 @@ export default function Home({
   navigation: HomeScreenNavigationProp;
 }) {
   return (
-    <Tab.Navigator initialRouteName="Today">
+    <Tab.Navigator
+      initialRouteName="Today"
+      backBehavior="initialRoute"
+      lazy={true}
+      lazyPlaceholder={Loading}
+    >
       <Tab.Screen name="Yesterday">
         {() => (
           <Matches

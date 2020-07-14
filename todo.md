@@ -1,2 +1,1 @@
-scrape name and language properly
-use vlc instead
+settle mx player error messages
